@@ -1,0 +1,1 @@
+{"name": "hive-link", "description": "Signed messages between Hives: ed25519 keys, a pinned peer list, replay and rate limits; received text is untrusted.", "bin": {"h2-link": "hive_link.py"}}
