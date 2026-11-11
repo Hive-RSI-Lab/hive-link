@@ -1,0 +1,43 @@
+name: ci
+# The module's unit tests on GitHub's standard hosted runner of a public repository (free, no minute cap).
+# The module train releases a commit only when a check here is green, so this file is what
+# lets this module have releases at all. Same shape as hive-video's workflow.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  # A PR's superseded run is cancelled; every push to main gets a group of its own.
+  group: ci-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+permissions:
+  contents: read
+jobs:
+  test:
+    # Pinned: ubuntu-latest moved to 26.04, whose package mirror on the runners failed to resolve
+    # (2026-11-11). Nothing here uses apt for the same reason.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      # The Python the Hives run; the runner's own is older.
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: python packages
+        run: python3 -m pip install cryptography
+      - name: tests
+        shell: bash
+        run: |
+          python3 -m unittest test_link 2>&1 | tee "$RUNNER_TEMP/check.log"; test "${PIPESTATUS[0]}" = 0
+      # Job logs need a login; annotations don't, so a Hive can read what failed.
+      - name: name the failing cases
+        if: failure()
+        shell: bash
+        run: |
+          grep -a -E '^(FAIL|ERROR|not ok|FAILED|Traceback|[A-Za-z]*Error)' "$RUNNER_TEMP/check.log" | head -20 | while IFS= read -r l; do
+            echo "::error::${l:0:400}"
+          done
