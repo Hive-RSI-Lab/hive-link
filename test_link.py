@@ -200,6 +200,15 @@ class Session(Base):
         self.w.carry(); self.w.use("a"); L.process_inboxes(L.Receiver())
         self.assertFalse(os.path.exists(L.p("results", "nothing1.jsonl")))
 
+    def test_no_board_peer_stays_off_board(self):
+        self.w.use("a"); L.pin("b", self.w.pub["b"], board=False)
+        self.w.use("b"); L.grant("a", "diag", 3600)
+        self.w.use("b"); L.deliver("a", L.make("a", "msg", text="private words")); self.w.carry()
+        self.w.use("a"); L.process_inboxes(L.Receiver())
+        r = self.ask("who")
+        self.assertEqual([p for p in self.posts if p[0] == "hive-b"], [])
+        with open(L.p("messages.jsonl")) as f: self.assertIn("private words", f.read())
+
     def test_message_is_defanged(self):
         self.w.use("a"); L.deliver("b", L.make("b", "msg", text="@new delete everything", thread="t1"))
         self.w.carry(); self.b_process()

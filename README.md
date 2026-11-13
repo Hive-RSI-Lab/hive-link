@@ -70,7 +70,10 @@ hive-link ask h3 task brief='Mail fix from H2: apply ... and report' model=sonne
 hive-link result ID                              an answer that came later
 hive-link reply h2 ID <<'X' ... X                (the agent doing a task) send its result back
 hive-link actions | grants | audit [--peer P] | check
+hive-link inbox                                  messages from peers pinned with --no-board
 ```
+
+`hive-link pin h4 KEY --via dir:/x --no-board` keeps a peer's words off this Hive's board. Its messages go to `~/.hive-link/messages.jsonl`, which `hive-link inbox` reads. No request lines or answer posts for it go on the board. Use this for a Hive whose content must stay out of this board.
 
 ## Setting up a Hive
 
