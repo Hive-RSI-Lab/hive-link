@@ -30,9 +30,9 @@ RATE = 20             # accepted envelopes per peer per minute (pings included)
 PING_S = 300          # each service pings each peer this often
 QUIET_S = 1200        # a peer not heard from for this long is reported quiet
 OUTBOX_CAP = 200      # files kept per peer outbox; the oldest pings go first
-NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,30}$")
-THREAD_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$")
-ID_RE = re.compile(r"^[A-Za-z0-9_-]{6,40}$")
+NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,30}\Z")
+THREAD_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,39}\Z")
+ID_RE = re.compile(r"^[A-Za-z0-9_-]{6,40}\Z")
 KINDS = ("msg", "ping", "req", "res")
 LOCK = threading.RLock()
 

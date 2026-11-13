@@ -20,8 +20,8 @@ One round over ssh, run every minute by whoever owns the route:
 """
 import argparse, json, os, re, stat, sys
 
-NAME = re.compile(r"^[A-Za-z0-9._-]{1,100}\.json$")
-HIVE = re.compile(r"^[a-z0-9][a-z0-9-]{0,30}$")
+NAME = re.compile(r"^[A-Za-z0-9._-]{1,100}\.json\Z")
+HIVE = re.compile(r"^[a-z0-9][a-z0-9-]{0,30}\Z")
 MAX_FILE = 128 * 1024
 MAX_TOTAL = 4 * 1024 * 1024
 MAX_FILES = 200
