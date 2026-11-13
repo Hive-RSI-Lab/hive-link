@@ -249,7 +249,7 @@ def board_post(as_name, thread, text, to=None, model=None):
     subprocess.run(args, input=text, text=True, check=False, timeout=60, stdout=subprocess.DEVNULL)
 
 # ---------- redaction ----------
-SECRET_KEY = re.compile(r"(token|secret|passw|pass$|^pass|_pass|pwd|api[_-]?key|private|seed|credential|cookie|session|auth(?!or)|bearer|webhook|dsn|signing|^key$|_key$|-key$)", re.I)
+SECRET_KEY = re.compile(r"(token|secret|passw|pass$|^pass|_pass|pwd|api[_-]?key|private|seed|credential|cookie|session|auth(?!or)|bearer|webhook|dsn|signing|^key$|_key$|-key$|^pw$|_pw$|^pw_)", re.I)
 _K = r"(?:authorization|api[_-]?key|access[_-]?key|token|secret|passw(?:or)?d|pass|pwd|cookie|session|auth|credential|private[_-]?key|dsn|webhook|bearer)"
 SECRET_SHAPES = [
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY[A-Z ]*-----[\s\S]*?(-----END [A-Z ]*PRIVATE KEY[A-Z ]*-----|$)"),
@@ -261,6 +261,8 @@ SECRET_SHAPES = [
     re.compile(r"(?i)(?<![A-Za-z0-9])([A-Za-z0-9_.-]*" + _K + r"[A-Za-z0-9_.-]*)(['\"]?\s*[:=]\s*['\"]?)(bearer\s+|basic\s+)?[^\s\"',;}]{4,}"),
     re.compile(r"(?<=://)[^/\s:@]+:[^/\s@]+(?=@)"),               # user:password@ in URLs
     re.compile(r"(?i)(?<=[?&])(key|token|sig|signature|secret|auth|access_token|code|pwd|pass|password)=[^&\s\"']+"),
+    re.compile(r"(?<![A-Za-z0-9])SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}"), re.compile(r"(?<![A-Za-z0-9])glpat-[A-Za-z0-9_-]{20,}"),
+    re.compile(r"(?<![A-Za-z0-9])key-[0-9a-z]{32}(?![0-9a-z])"), re.compile(r"(?i)(?<![A-Za-z0-9])pw['\"]?\s*[:=]\s*['\"]?[^\s\"',;}]{3,}"),
     re.compile(r"(?<![A-Za-z0-9])hf_[A-Za-z0-9]{20,}"), re.compile(r"GOCSPX-[A-Za-z0-9_-]{16,}"),
     re.compile(r"(?<![0-9])\d{8,10}:[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])"),   # Telegram bot tokens
     re.compile(r"(?i)(?<![A-Za-z0-9])(password|passwd|passphrase)\s+\S{3,}"),   # .netrc and friends

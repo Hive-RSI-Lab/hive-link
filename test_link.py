@@ -326,15 +326,16 @@ class Redaction(unittest.TestCase):
                    "id 0f3a" + "9" * 28: "0f3a999", "Cookie: session=abcd1234efgh5678": "abcd1234efgh",
                    "-----BEGIN PGP PRIVATE KEY BLOCK-----\nlQOYBF\n-----END PGP PRIVATE KEY BLOCK-----": "lQOYBF",
                    "https://h/x?pwd=letmein99": "letmein99", "machine m login u password n3tRcPw": "n3tRcPw",
-                   "s.login('me@x.org', 'Sm7pPw!x')": "Sm7pPw"}
+                   "s.login('me@x.org', 'Sm7pPw!x')": "Sm7pPw", "pw: hunter2abc": "hunter2abc", "key-" + "3ax6" * 8: "3ax63ax6",
+                   "glpat-" + "Xy7" * 8: "Xy7Xy7", "SG." + "abcDEF123" * 3 + "." + "QRS456tuv" * 4: "abcDEF123"}
         for s, bad in samples.items():
             self.assertNotIn(bad, L.redact(s, []), s)
         for keep in ("commit 0123456789abcdef0123456789abcdef01234567", "the author wrote", "port: 8080", "monkey see"):
             self.assertEqual(L.redact(keep, []), keep)
 
     def test_secret_key_values_of_any_type(self):
-        o = L.redact_obj({"tokens": ["a", "b"], "auth": {"user": "u", "x": "y"}, "author": "Ada", "password": 1234}, [])
-        self.assertEqual(o["tokens"], "[redacted]"); self.assertEqual(o["auth"], "[redacted]"); self.assertEqual(o["password"], "[redacted]")
+        o = L.redact_obj({"tokens": ["a", "b"], "auth": {"user": "u", "x": "y"}, "author": "Ada", "password": 1234, "pw": "x9"}, [])
+        self.assertEqual(o["tokens"], "[redacted]"); self.assertEqual(o["auth"], "[redacted]"); self.assertEqual(o["password"], "[redacted]"); self.assertEqual(o["pw"], "[redacted]")
         self.assertEqual(o["author"], "Ada")
 
 
