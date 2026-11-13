@@ -345,14 +345,14 @@ def active_grant(peer, now=None):
 # ---------- actions (what a peer may ask for) ----------
 UNIT_RE = re.compile(r"^(hive|h2)-[a-z0-9_-]{1,60}(\.(service|timer|path))?$")   # no @ templates, no dots: systemd unescapes those into paths
 HARD_LIMIT = re.compile(r"(?i)\b((print|show|send|copy|give|reveal|cat|echo|paste|export|upload|email|post)\b[^.\n]{0,60}\b(token|password|passwd|credential|secret|api[ _-]?key|private key|seed|cookie|login)"
-                        r"|credentials|auth\.json|id_(rsa|ed25519)|\.netrc|\.git-credentials|hosts\.yml|\.env\b|\.ssh/|keyring"
+                        r"|credentials|auth\.json|[\w~./-]*/[\w.-]*(token|secret|passw|credential)[\w.-]*|\.config/(h2|hive|gh)/|id_(rsa|ed25519)|\.netrc|\.git-credentials|hosts\.yml|\.env\b|\.ssh/|keyring"
                         r"|\b(buy|purchase|pay|subscribe|order|spend|top[ -]?up|checkout)\b[^.\n]{0,40}\b(\$|usd|eur|cad|money|card|plan|credits?|domain|license|subscription)"
                         r"|\b(delete|remove|drop|wipe|destroy)\b[^.\n]{0,30}\b(repo|repository|history|commits?|branch(es)?)\b|force[ -]?push|push\s+(-\w*f|--force)|reset\s+--hard\s+origin|\brepo\s+delete|\bbranch\s+-D|filter-(branch|repo)|rm\s+-\w*r\w*\s+\S*\.git\b"
                         r"|\b(card on file|credit card|billing|invoice|renew\w*|donate|wire|transfer)\b"
                         r"|0\.0\.0\.0|\bopen\b[^.\n]{0,30}\b(port|firewall)|ufw\s+allow|port[ -]?forward|\bsudo\b|\broot\b shell"
                         r"|\b(publish|post|tweet|share|email|send|leak|upload)\b[^.\n]{0,40}\b(private|personal|home address|phone|person's (address|email|phone|details|number))"
                         r"|\b(on behalf of|in the name of|as the person|sign (it|in) as|signed (with|as) (their|his|her|the person'?s)|from the person|pretend to be|impersonat\w*)\b"
-                        r"|\b(listen|bind|serve|expose|tunnel|ngrok|port[ -]?forward)\w*\b[^.\n]{0,40}\b(public\w*|internet|outside|0\.0\.0\.0|lan|world)\b)")
+                        r"|\b(listen|bind|serve|expose|tunnel|ngrok|port[ -]?forward)\w*\b[^.\n]{0,40}\b(public\w*|internet|outside|0\.0\.0\.0|lan|world|all (network )?interfaces|every interface|\*:\d+)\b)")
 FILE_ROOTS = ("kb", "modules", "core", "projects")
 FILE_DENY = re.compile(r"(?i)(secret|token|credential|passw|(^|/)\.env(\.|$)|\.key$|\.pem$|\.p12$|identity\.json|auth\.json|(^|/)\.git(/|$)|cookie|\.netrc|id_(rsa|ed25519|ecdsa))")
 
