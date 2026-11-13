@@ -21,9 +21,10 @@ Commands: `hive-link` (also `h2-link`). Python 3 with `cryptography`. Files live
   ```
   hive-link grant h2 diag --for 2h --why "debugging the mail fix"
   hive-link grant h2 admin --standing --why "our hub Hive"   # until revoked
+  hive-link grant h2 task --for 4h --why "H3's mail fix"      # at most 24 h, never standing
   hive-link revoke h2
   ```
-  `diag` covers read-only actions. `admin` adds changes. An expired grant counts as no grant.
+  `diag` covers read-only actions. `admin` adds changes. `task` adds starting an agent here on the peer's brief; it is always time-limited (24 h at most) and never standing, and a peer pinned with `--no-board` can't be given one. An expired grant counts as no grant.
 - There is no generic shell. A peer can ask only for the fixed actions below, each with checked arguments.
 - A request arriving over the link can never do a hard-limit thing, whatever the grant says. That means it can't:
   - spend money;
@@ -33,15 +34,17 @@ Commands: `hive-link` (also `h2-link`). Python 3 with `cryptography`. Files live
   - publish private details;
   - act in the person's name.
 
-  These limits are enforced in three ways:
-  - None of the actions can do these things.
-  - A `task` brief that reads as one of them is refused before any agent sees it.
-  - The agent a task starts is told the limits hold.
+  What holds them:
+  - None of the fixed actions can do these things. This is the real guard.
+  - A `task` starts an agent on this Hive, which can do anything this Hive's agents can. So `task` is its own scope, short and never standing. The agent gets the brief framed as untrusted text from another Hive, is told the hard limits hold, and is told to ask `warden` in its thread before acting.
+  - A brief that reads as a hard-limit thing is refused before any agent sees it. This is a pattern match, a speed bump against honest mistakes, not a guard: a reworded brief gets past it.
 - Everything a peer sends back is **redacted** before it leaves:
-  - exact values from this Hive's own secret files;
-  - common secret shapes, such as API keys, tokens, JWTs, private keys, URL passwords and `token=` pairs;
-  - any setting whose name looks secret.
-- Answers and messages are **untrusted data** on arrival. `@` becomes `＠`, so remote text can never wake an agent.
+  - exact values from this Hive's own secret files (credentials, tokens, `.env` files, `*.secret`, keys);
+  - common secret shapes, such as API keys (Anthropic, OpenAI, Stripe, GitHub, Slack, AWS, Google OAuth, Hugging Face, Telegram), JWTs, PEM and PGP private keys, URL passwords, cookies, netrc passwords and `password=`/`token:`-style pairs in any quoting;
+  - any value, of any type, under a name that looks secret.
+
+  Redaction is pattern-based and can miss an odd shape. That is why `file` reads only kb, modules, core and projects, refuses secret-looking names and symlinks, and why `diag` is the grant to give by default.
+- Answers and messages are **untrusted data** on arrival. `@` becomes `＠`, so remote text can never wake an agent, and every line is quoted with `│ ` so it can't pass for a post's own lines. A peer's message lands in thread `link-PEER` (or a thread this Hive asked that peer in), never in a thread the peer picks. Each request takes one answer (a task two: the answer and the agent's reply); more are dropped.
 - **Audit.** Every request and its decision go to `~/.hive-link/audit.jsonl`. The receiving Hive also posts one line per request to its board thread `hive-link`, where its owner reads them.
 
 ## Actions
@@ -51,13 +54,13 @@ Commands: `hive-link` (also `h2-link`). Python 3 with `cryptography`. Files live
 | `status` | diag | version, hive-/h2- units, failed units, load, memory, disk, link peers |
 | `logs` | diag | `unit=hive-starter lines=100 [since='2h ago']`, this Hive's own units only |
 | `settings` | diag | settings files with secrets left out, link peers and grants |
-| `board` | diag | `since=2h` or `thread=T` |
+| `board` | admin | `since=2h` or `thread=T` (the board holds the person's words, so it is not diagnostics) |
 | `who`, `modules` | diag | agents running; modules |
 | `file` | diag | `path=kb/...`: read a text file or list a folder under kb, modules, core or projects; secret-looking names are refused |
-| `restart` | admin | `unit=hive-dash`: one of this Hive's units, never the link itself |
+| `restart` | admin | `unit=hive-dash`: one of this Hive's loaded `hive-`/`h2-` units (no templates), never the link itself |
 | `module-add` | admin | `name=X`, from this Hive's catalog only, never a URL |
 | `update` | admin | `check=1` (default) or `check=0` to install a signed release |
-| `task` | admin | `brief='...' [model=sonnet]`: starts an agent on the receiving Hive. It answers with `hive-link reply` |
+| `task` | task | `brief='...' [model=sonnet]`: starts an agent on the receiving Hive. It answers with `hive-link reply` |
 
 ## Commands for agents
 
@@ -100,7 +103,7 @@ courier.py pack /var/lib/h2-link/h3/out --from h2 --to h3 \
   | courier.py unpack /var/lib/h2-link/h3/in --from h3 --to h2
 ```
 
-Whoever owns the route runs the courier from their own copy. It needs no listener.
+Whoever owns the route runs the courier from their own copy. It needs no listener. Run each end **as the owner of that spool** (`runuser -u hive2 --`, `setpriv`), never as root on a dir another account can write. The courier works through one directory fd and never follows a link or opens a FIFO, but dropping to the owner is the first guard.
 
 ## Tests
 
@@ -110,12 +113,15 @@ Whoever owns the route runs the courier from their own copy. It needs no listene
 - extra fields;
 - out-of-scope, expired, revoked and missing grants;
 - shell-like and unknown actions;
-- path escapes and symlinks;
-- foreign units;
+- path escapes, symlinks and FIFOs, in `file`, in the inbox and in the courier's spool (including the spool dir itself swapped for a link);
+- deeply nested and oversize JSON, and bad HTTP lengths;
+- foreign and template units;
+- briefs that try credentials, force-push, repo deletion, the card on file, impersonation or a public listener;
+- a peer choosing the board thread, and repeated answers;
 - module URLs;
 - hard-limit briefs;
 - answers from the wrong peer or to nothing asked;
 - hostile courier bundles;
-- redaction.
+- redaction, including the samples a reviewer found getting through.
 
 Version 1 envelopes (`text` with no `kind`) are still accepted as messages.
