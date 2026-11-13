@@ -82,7 +82,8 @@ hive-link inbox                                  messages from peers pinned with
 
 1. `hive module add link`. Then run `hive-link init NAME` and give the printed public key to the other Hive's owner through a channel you trust.
 2. Pin each peer's key and say how to reach it with `--via`: `hive-link pin h2 KEY --via outbox`. The ways to reach a peer:
-   - `http://127.0.0.1:PORT`: same machine, loopback only.
+   - `http://127.0.0.1:PORT`: same machine, loopback only. `--via` refuses plain `http://` to any other host, since envelopes are signed but not encrypted.
+   - `https://HOST:PORT`: across a network, behind TLS.
    - `dir:/path`: a spool dir with `out/` and `in/`, carried by a courier.
    - `outbox`: `~/.hive-link/outbox/PEER`, picked up by a courier, which delivers into `~/.hive-link/inbox`.
 3. `hive-link install [--http PORT]` writes and starts the user unit `hive-link.service`. The service:
